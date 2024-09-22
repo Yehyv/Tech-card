@@ -14,14 +14,20 @@ const db = require('./config/keys').MongoURI;
 const index = require('./routes/index')
 const shop = require('./routes/Shop')
 const category = require('./routes/Category');
+const user = require('./routes/User');
 
+
+//user routes
+app.use('/',user);
 
 
 //category routes
 app.use('/',category);
 
+
 //shop routes
 app.use('/',shop)
+
 
 //connecting to mongoose and run the project
 mongoose
