@@ -2,10 +2,11 @@ const express = require('express');
 const Shops = require('../models/Shop');
 const Category = require('../models/Category');
 const router = require('express').Router(); 
+const { authMiddleware, authorizeRoles } = require('../middleware/authMiddleware');
 
 
 //creating new shop
-router.post('/CreateShop',async(req,res)=>{
+router.post('/CreateShop', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
     try {
         const shop = await Shops.create(req.body);
         res.status(200).json(shop);
@@ -17,7 +18,7 @@ router.post('/CreateShop',async(req,res)=>{
 
 
 //getting all shops (Latest offers)
-router.get('/shops',async(req,res)=>{
+router.get('/shops', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     try {
         const shops = await Shops.find({}).sort({updatedAt:-1}).populate('category');
         res.status(200).json(shops);
@@ -28,7 +29,7 @@ router.get('/shops',async(req,res)=>{
 })
 
 //getting shops according to specific category
-router.get('/category/:categoryId/shops',async(req,res)=>{
+router.get('/category/:categoryId/shops', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     try {
         const shops = await Shops.find({category: req.params.categoryId}).populate('category');
         if(!shops){
@@ -42,7 +43,7 @@ router.get('/category/:categoryId/shops',async(req,res)=>{
 
 
 //getting specefic shop
-router.get('/shop/:id',async(req,res)=>{
+router.get('/shop/:id', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     try {
         const{id} = req.params;
         const shop = await Shops.findById(id);
@@ -54,7 +55,7 @@ router.get('/shop/:id',async(req,res)=>{
 
 
 //update shop details
-router.put('/shop/:id',async(req,res)=>{
+router.put('/shop/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
     try {
         const{id} = req.params;
         const shop = await Shops.findByIdAndUpdate(id,req.body);
@@ -69,7 +70,7 @@ router.put('/shop/:id',async(req,res)=>{
 })
 
 //deleting specefic shop
-router.delete('/shop/:id',async(req,res)=>{
+router.delete('/shop/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
     try {
         const {id} = req.params;
         const shop = await Shops.findByIdAndDelete(id);
