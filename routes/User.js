@@ -3,7 +3,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const router = require('express').Router(); 
-
+const bcrypt = require('bcrypt'); 
 console.log('JWT Secret:', process.env.JWT_SECRET); // Add this line for debugging
 
 //Generate JWT token
@@ -106,7 +106,7 @@ router.post('/logout',(req,res)=>{
 
 //change password
 router.put('/change-password/:id',async(req,res)=>{
-    const {oldPassword, newPassowrd} = req.body;
+    const {oldPassword, newPassword} = req.body;
     const{id} = req.params;
     try {
         const user = await User.findById(id);
@@ -117,7 +117,9 @@ router.put('/change-password/:id',async(req,res)=>{
         if(!isMatch){
             return res.status(404).json({message:'Old password is incorrect'});
         }
-        user.password = newPassowrd;
+        user.password = newPassword;
+        
+        user.markModified('password');  // This triggers the `pre('save')` hook
         await user.save();
         res.json({message: 'password changed successfully'});
 
