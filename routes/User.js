@@ -3,7 +3,11 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const router = require('express').Router(); 
-const bcrypt = require('bcrypt'); 
+const { authMiddleware, authorizeRoles } = require('../middleware/authMiddleware');
+
+
+
+
 console.log('JWT Secret:', process.env.JWT_SECRET); // Add this line for debugging
 
 //Generate JWT token
@@ -13,7 +17,7 @@ const generateToken = (id)=>{
 
 
 //create user
-router.post('/createUser',async(req,res)=>{
+router.post('/createUser', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
     const{name,username, password,role} = req.body;
     try {
         const user = await User.create({name,username,password,role});
@@ -26,7 +30,7 @@ router.post('/createUser',async(req,res)=>{
 
 
 //getting all users
-router.get('/users',async(req,res)=>{
+router.get('/users', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
     try {
         const users= await User.find({active:true}).select('-password') //exclude password from response
         res.status(200).json(users);
@@ -37,7 +41,7 @@ router.get('/users',async(req,res)=>{
 
 
 //getting specific user
-router.get('/user/:id',async(req,res)=>{
+router.get('/user/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
     const{id} = req.params;
     try {
        const user = await User.findById(id).select('-password'); //exclude password from response
@@ -52,7 +56,7 @@ router.get('/user/:id',async(req,res)=>{
 
 
 //update user
-router.put('/user/:id',async(req,res)=>{
+router.put('/user/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
     const{id} = req.params;
     const updates = req.body;
     try {
@@ -67,7 +71,7 @@ router.put('/user/:id',async(req,res)=>{
 })
 
 //soft delete user (make it inactive)
-router.delete('/user/:id',async(req,res)=>{
+router.delete('/user/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
     const{id} = req.params;
     try {
         const user = await User.findByIdAndUpdate(id,{active:false},{new:true}).select('-password');
@@ -93,20 +97,25 @@ router.post('/login',async(req,res)=>{
             return res.status(401).json({error: 'invalid credentials'})
         }
         const token = generateToken(user._id);
-        res.json({token});
+        if(user.role == 'admin'){
+            return res.json({token, redirect: '/dashboard'});
+        }
+        else{
+            return res.json({token , redirect:'/app'});
+        }
     } catch (error) {
         res.status(500).json({error:error.message});
     }
 });
 
 //logout
-router.post('/logout',(req,res)=>{
+router.post('/logout', authMiddleware, authorizeRoles('admin'),(req,res)=>{
     res.json({message:'logout successfully'});
 })
 
 //change password
-router.put('/change-password/:id',async(req,res)=>{
-    const {oldPassword, newPassword} = req.body;
+router.put('/change-password/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
+    const {oldPassword, newPassowrd} = req.body;
     const{id} = req.params;
     try {
         const user = await User.findById(id);

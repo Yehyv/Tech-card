@@ -2,10 +2,11 @@ const express = require('express');
 const Shops = require('../models/Shop');
 const Category = require('../models/Category');
 const router = require('express').Router(); 
+const { authMiddleware, authorizeRoles } = require('../middleware/authMiddleware');
 
 
 //creating new shop
-router.post('/CreateShop',async(req,res)=>{
+router.post('/CreateShop', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
     try {
         const shop = await Shops.create(req.body);
         res.status(200).json(shop);
@@ -17,10 +18,24 @@ router.post('/CreateShop',async(req,res)=>{
 
 
 //getting all shops (Latest offers)
-router.get('/shops',async(req,res)=>{
+router.get('/shops', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     try {
         const shops = await Shops.find({}).sort({updatedAt:-1}).populate('category');
-        res.status(200).json(shops);
+        const ShopMap = shops.map(shop=> ({
+            id: shop._id,
+            name: shop.name,
+            offerAmount: shop.offerAmount,
+            offerDescription: shop.offerDescription,
+            logo: shop.log,
+            cover: shop.cover,
+            category: {
+               id: shop.category._id,
+               name: shop.category.name,
+               image: shop.image
+
+            }
+        }));
+        res.status(200).json(ShopMap);
     } catch (error) {
         console.log(error.message);
         res.status(500).json({message:error.message});
@@ -28,25 +43,47 @@ router.get('/shops',async(req,res)=>{
 })
 
 //getting shops according to specific category
-router.get('/category/:categoryId/shops',async(req,res)=>{
+router.get('/category/:categoryId/shops', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     try {
         const shops = await Shops.find({category: req.params.categoryId}).populate('category');
         if(!shops){
             return res.status(404).json(`no shops found for this category`);
         }
-        res.status(200).json(shops);
+        const ShopMap = shops.map(shop=> ({
+            id: shop._id,
+            name: shop.name,
+            offerAmount: shop.offerAmount,
+            offerDescription: shop.offerDescription,
+            logo: shop.log,
+            cover: shop.cover,
+            category: {
+               id: shop.category._id,
+               name: shop.category.name,
+               image: shop.image
+
+            }
+        }));
+        res.status(200).json(ShopMap);
     } catch (error) {
-        res.status(500).json({message:message.error});
+        res.status(500).json('error');
     }
 });
 
 
 //getting specefic shop
-router.get('/shop/:id',async(req,res)=>{
+router.get('/shop/:id', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     try {
         const{id} = req.params;
         const shop = await Shops.findById(id);
-        res.status(200).json(shop);
+        const ShopMap = {
+            id: shop._id,
+            name: shop.name,
+            offerAmount: shop.offerAmount,
+            offerDescription: shop.offerDescription,
+            logo: shop.log,
+            cover: shop.cover,
+        };
+        res.status(200).json(ShopMap);
     } catch (error) {
         res.status(500).json({message:message.error});
     }
@@ -54,7 +91,7 @@ router.get('/shop/:id',async(req,res)=>{
 
 
 //update shop details
-router.put('/shop/:id',async(req,res)=>{
+router.put('/shop/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
     try {
         const{id} = req.params;
         const shop = await Shops.findByIdAndUpdate(id,req.body);
@@ -62,14 +99,22 @@ router.put('/shop/:id',async(req,res)=>{
             return res.status(404).json({message:`cannot find any products with id ${id}`});
         }
         const updatedShop = await Shops.findById(id);
-        res.status(200).json(updatedShop);
+        const ShopMap = {
+            id: updatedShop._id,
+            name: updatedShop.name,
+            offerAmount: updatedShop.offerAmount,
+            offerDescription: updatedShop.offerDescription,
+            logo: updatedShop.log,
+            cover: updatedShop.cover,
+        };
+        res.status(200).json(ShopMap);
     } catch (error) {
         res.status(500).json({message:message.error});
     }
 })
 
 //deleting specefic shop
-router.delete('/shop/:id',async(req,res)=>{
+router.delete('/shop/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
     try {
         const {id} = req.params;
         const shop = await Shops.findByIdAndDelete(id);
@@ -77,7 +122,7 @@ router.delete('/shop/:id',async(req,res)=>{
             return res.status(404).json({message: `cannot find shop with id ${id}`});
             
         }
-        res.status(200).json(shop);
+        res.status(200).json({message: "Deleted succefully"});
     } catch (error) {
         res.status(500).json({message:message.error});
     }
