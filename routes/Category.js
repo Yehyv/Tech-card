@@ -20,6 +20,7 @@ router.post('/CreateCategory', authMiddleware, authorizeRoles('admin'),async(req
     }
 });
 
+
 //getting all categories
 router.get('/categories', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     try {

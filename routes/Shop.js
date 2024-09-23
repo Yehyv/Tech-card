@@ -26,7 +26,7 @@ router.get('/shops', authMiddleware, authorizeRoles('admin','user'),async(req,re
             name: shop.name,
             offerAmount: shop.offerAmount,
             offerDescription: shop.offerDescription,
-            logo: shop.log,
+            logo: shop.logo,
             cover: shop.cover,
             category: {
                id: shop.category._id,
