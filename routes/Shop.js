@@ -22,7 +22,21 @@ router.post('/CreateShop', authMiddleware, authorizeRoles('admin'),async(req,res
 router.get('/shops', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     try {
         const shops = await Shops.find({}).sort({updatedAt:-1}).populate('category');
-        res.status(200).json(shops);
+        const ShopMap = shops.map(shop=> ({
+            id: shop._id,
+            name: shop.name,
+            offerAmount: shop.offerAmount,
+            offerDescription: shop.offerDescription,
+            logo: shop.logo,
+            cover: shop.cover,
+            category: {
+               id: shop.category._id,
+               name: shop.category.name,
+               image: shop.image
+
+            }
+        }));
+        res.status(200).json(ShopMap);
     } catch (error) {
         console.log(error.message);
         res.status(500).json({message:error.message});
@@ -36,9 +50,23 @@ router.get('/category/:categoryId/shops', authMiddleware, authorizeRoles('admin'
         if(!shops){
             return res.status(404).json(`no shops found for this category`);
         }
-        res.status(200).json(shops);
+        const ShopMap = shops.map(shop=> ({
+            id: shop._id,
+            name: shop.name,
+            offerAmount: shop.offerAmount,
+            offerDescription: shop.offerDescription,
+            logo: shop.log,
+            cover: shop.cover,
+            category: {
+               id: shop.category._id,
+               name: shop.category.name,
+               image: shop.image
+
+            }
+        }));
+        res.status(200).json(ShopMap);
     } catch (error) {
-        res.status(500).json({message:message.error});
+        res.status(500).json('error');
     }
 });
 
@@ -48,7 +76,15 @@ router.get('/shop/:id', authMiddleware, authorizeRoles('admin','user'),async(req
     try {
         const{id} = req.params;
         const shop = await Shops.findById(id);
-        res.status(200).json(shop);
+        const ShopMap = {
+            id: shop._id,
+            name: shop.name,
+            offerAmount: shop.offerAmount,
+            offerDescription: shop.offerDescription,
+            logo: shop.log,
+            cover: shop.cover,
+        };
+        res.status(200).json(ShopMap);
     } catch (error) {
         res.status(500).json({message:message.error});
     }
@@ -64,7 +100,15 @@ router.put('/shop/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>
             return res.status(404).json({message:`cannot find any products with id ${id}`});
         }
         const updatedShop = await Shops.findById(id);
-        res.status(200).json(updatedShop);
+        const ShopMap = {
+            id: updatedShop._id,
+            name: updatedShop.name,
+            offerAmount: updatedShop.offerAmount,
+            offerDescription: updatedShop.offerDescription,
+            logo: updatedShop.log,
+            cover: updatedShop.cover,
+        };
+        res.status(200).json(ShopMap);
     } catch (error) {
         res.status(500).json({message:message.error});
     }
@@ -79,7 +123,7 @@ router.delete('/shop/:id', authMiddleware, authorizeRoles('admin'),async(req,res
             return res.status(404).json({message: `cannot find shop with id ${id}`});
             
         }
-        res.status(200).json(shop);
+        res.status(200).json({message: "Deleted succefully"});
     } catch (error) {
         res.status(500).json({message:message.error});
     }

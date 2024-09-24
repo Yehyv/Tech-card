@@ -71,6 +71,7 @@ router.put('/user/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>
     }
 })
 
+
 //soft delete user (make it inactive)
 router.delete('/user/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
     const{id} = req.params;
@@ -84,6 +85,7 @@ router.delete('/user/:id', authMiddleware, authorizeRoles('admin'),async(req,res
         res.status(400).json({error:error.messge})
     }
 });
+
 
 //login
 router.post('/login',async(req,res)=>{
@@ -109,10 +111,12 @@ router.post('/login',async(req,res)=>{
     }
 });
 
+
 //logout
 router.post('/logout', authMiddleware, authorizeRoles('admin','user'),(req,res)=>{
     res.json({message:'logout successfully'});
 })
+
 
 //change password
 router.put('/change-password/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
@@ -149,7 +153,6 @@ router.put('/change-password/:id', authMiddleware, authorizeRoles('admin'),async
         res.status(500).json({error:error.message});
     }
 
-
-
+    
 })
 module.exports = router;
