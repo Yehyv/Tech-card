@@ -2,6 +2,7 @@ const express = require('express');
 const Shops = require('../models/Shop');
 const Category = require('../models/Category');
 const router = require('express').Router(); 
+const unorm = require('unorm');
 const { authMiddleware, authorizeRoles } = require('../middleware/authMiddleware');
 
 
@@ -82,6 +83,27 @@ router.delete('/shop/:id', authMiddleware, authorizeRoles('admin'),async(req,res
     } catch (error) {
         res.status(500).json({message:message.error});
     }
+})
+
+
+//search function 
+router.get('/search',authMiddleware , authorizeRoles('admin','user'), async(req,res)=>{
+    const{query} = req.query
+    try {
+        if(!query){
+            return res.status(400).json({message: 'nothing to search for'});
+        }
+        const normalizedQuery = unorm.nfkd(query);
+        const regex = RegExp(normalizedQuery, 'i');
+        const shop = await Shops.find({name : regex}).populate('category');
+        res.status(200).json(shop);
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ message: error.message });
+    }
+   
+   
+
 })
 
 module.exports = router;

@@ -2,7 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const router = require('express').Router(); 
+const router = require('express').Router();
+const bcrypt = require('bcrypt');
 const { authMiddleware, authorizeRoles } = require('../middleware/authMiddleware');
 
 
@@ -109,25 +110,39 @@ router.post('/login',async(req,res)=>{
 });
 
 //logout
-router.post('/logout', authMiddleware, authorizeRoles('admin'),(req,res)=>{
+router.post('/logout', authMiddleware, authorizeRoles('admin','user'),(req,res)=>{
     res.json({message:'logout successfully'});
 })
 
 //change password
 router.put('/change-password/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
-    const {oldPassword, newPassowrd} = req.body;
+    const {oldPassword, newPassword} = req.body;
     const{id} = req.params;
+    console.log("test1")
+
     try {
         const user = await User.findById(id);
         if(!user || !user.active){
             return res.status(404).json({message:'user not found or inactive'});
         }
         const isMatch = await user.comparePassword(oldPassword);
+        
         if(!isMatch){
             return res.status(404).json({message:'Old password is incorrect'});
         }
-        user.password = newPassowrd;
+        console.log(newPassword);
+
+        const hashedPassword = await bcrypt.hash(newPassword,10);
+        console.log("test2")
+
+        user.password = hashedPassword;
+        console.log("test3")
+
         await user.save();
+        console.log("test4")
+
+        console.log("Old Password:", oldPassword);
+        console.log("New Password:", newPassword);
         res.json({message: 'password changed successfully'});
 
     } catch (error) {
