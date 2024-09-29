@@ -13,7 +13,7 @@ console.log('JWT Secret:', process.env.JWT_SECRET); // Add this line for debuggi
 
 //Generate JWT token
 const generateToken = (id)=>{
-    return jwt.sign({id}, process.env.JWT_SECRET, {expiresIn: '1h'})
+    return jwt.sign({id}, process.env.JWT_SECRET)
 };
 
 
@@ -104,7 +104,7 @@ router.post('/login',async(req,res)=>{
             return res.json({token, redirect: '/dashboard'});
         }
         else{
-            return res.json({token , redirect:'/app'});
+            return res.json({token, id:user._id, redirect:'/app'});
         }
     } catch (error) {
         res.status(500).json({error:error.message});
