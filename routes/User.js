@@ -18,7 +18,7 @@ const generateToken = (id)=>{
 
 
 //create user
-router.post('/createUser', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
+router.post('/createUser', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     const{name,username, password,role} = req.body;
     try {
         const user = await User.create({name,username,password,role});
@@ -31,7 +31,7 @@ router.post('/createUser', authMiddleware, authorizeRoles('admin'),async(req,res
 
 
 //getting all users
-router.get('/users', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
+router.get('/users', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     try {
         const users= await User.find({active:true}).select('-password') //exclude password from response
         res.status(200).json(users);
@@ -42,7 +42,7 @@ router.get('/users', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
 
 
 //getting specific user
-router.get('/user/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
+router.get('/user/:id', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     const{id} = req.params;
     try {
        const user = await User.findById(id).select('-password'); //exclude password from response
@@ -57,7 +57,7 @@ router.get('/user/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>
 
 
 //update user
-router.put('/user/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
+router.put('/user/:id', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     const{id} = req.params;
     const updates = req.body;
     try {
@@ -73,7 +73,7 @@ router.put('/user/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>
 
 
 //soft delete user (make it inactive)
-router.delete('/user/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
+router.delete('/user/:id', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     const{id} = req.params;
     try {
         const user = await User.findByIdAndUpdate(id,{active:false},{new:true}).select('-password');
@@ -119,7 +119,7 @@ router.post('/logout', authMiddleware, authorizeRoles('admin','user'),(req,res)=
 
 
 //change password
-router.put('/change-password/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
+router.put('/change-password/:id', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     const {oldPassword, newPassword} = req.body;
     const{id} = req.params;
     console.log("test1")

@@ -14,7 +14,7 @@ const UserSchema = new mongoose.Schema({
     password:{
         type: String,
         required: true,
-        minlength: [6, 'Too short password']
+        minlength: [5, 'Too short password']
     },
     role:{
         type: String,
