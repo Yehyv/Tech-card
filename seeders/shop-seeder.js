@@ -29,7 +29,7 @@ async function seedShop(){
             offerAmount: 20,
             offerDescription: 'خصم بقيمة 20% داخل صالة المطعم / خصم بقيمة 15% تيك اواي او دليفري',
             logo: 'https://images.pexels.com/photos/775863/pexels-photo-775863.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-            cover: 'https://www.pexels.com/es-es/foto/tres-camarones-cocidos-en-lata-725992/',
+            cover: 'https://images.pexels.com/photos/725992/pexels-photo-725992.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
             category: categories.find(cat=> cat.name === 'مطاعم')?._id,
         },
         {

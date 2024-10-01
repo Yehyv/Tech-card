@@ -101,10 +101,10 @@ router.post('/login',async(req,res)=>{
         }
         const token = generateToken(user._id);
         if(user.role == 'admin'){
-            return res.json({token, redirect: '/dashboard'});
+            return res.json({token, id:user._id,name:user.name, redirect: '/dashboard'});
         }
         else{
-            return res.json({token, id:user._id, redirect:'/app'});
+            return res.json({token, id:user._id,name:user.name, redirect:'/app'});
         }
     } catch (error) {
         res.status(500).json({error:error.message});
@@ -134,19 +134,23 @@ router.put('/change-password/:id', authMiddleware, authorizeRoles('admin','user'
         if(!isMatch){
             return res.status(404).json({message:'Old password is incorrect'});
         }
-        console.log(newPassword);
-
-        const hashedPassword = await bcrypt.hash(newPassword,10);
-        console.log("test2")
-
-        user.password = hashedPassword;
-        console.log("test3")
-
+        user.password = newPassword;
         await user.save();
-        console.log("test4")
+        res.json({ message: 'Password changed successfully' });
+        // console.log(newPassword);
 
-        console.log("Old Password:", oldPassword);
-        console.log("New Password:", newPassword);
+        // const hashedPassword = await bcrypt.hash(newPassword,10);
+        // console.log("test2")
+
+        // user.password = hashedPassword;
+        // console.log("test3")
+
+        // await user.save();
+        // console.log("test4")
+
+        // console.log("Old Password:", oldPassword);
+        // console.log("New Password:", newPassword);
+
         res.json({message: 'password changed successfully'});
 
     } catch (error) {
