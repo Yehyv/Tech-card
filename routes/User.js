@@ -56,16 +56,19 @@ router.get('/user/:id', authMiddleware, authorizeRoles('admin','user'),async(req
 });
 
 
-//update user
+//update user's name
 router.put('/user/:id', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     const{id} = req.params;
-    const updates = req.body;
+    const{name} = req.body;
     try {
-        const user = await User.findByIdAndUpdate(id,updates).select('-password')
+        const user = await User.findById(id);
         if(!user || !user.active){
-            return res.status(400).json({message:`can't find user with this id : ${id}`});
+            return res.status(404).json({message:'user not found or inactive'});
         }
-        res.status(200).json(user);
+        user.name = name;
+        await user.save();
+        res.json({ message: 'name changed successfully' });
+
     } catch (error) {
         res.status(400).json({error:error.message});
     }
