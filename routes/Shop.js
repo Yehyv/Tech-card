@@ -145,9 +145,6 @@ router.get('/search',authMiddleware , authorizeRoles('admin','user'), async(req,
         console.log(error.message);
         res.status(500).json({ message: error.message });
     }
-   
-   
-
 })
 
 module.exports = router;
