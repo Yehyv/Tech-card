@@ -64,13 +64,13 @@ mongoose
         //     process.exit(1);
         // });
         //////////////////////
-        // seedShop().then(()=>{
-        //     console.log("Shop seeding completed");
-        //     process.exit(0);
-        // }).catch((err)=>{
-        //     console.error("error seeding admin", err);
-        //     process.exit(1);
-        // });
+        seedShop().then(()=>{
+            console.log("Shop seeding completed");
+            process.exit(0);
+        }).catch((err)=>{
+            console.error("error seeding admin", err);
+            process.exit(1);
+        });
 
     })   
     .catch((error)=>{

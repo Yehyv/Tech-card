@@ -140,24 +140,9 @@ router.put('/change-password/:id', authMiddleware, authorizeRoles('admin','user'
         user.password = newPassword;
         await user.save();
         res.json({ message: 'Password changed successfully' });
-        // console.log(newPassword);
-
-        // const hashedPassword = await bcrypt.hash(newPassword,10);
-        // console.log("test2")
-
-        // user.password = hashedPassword;
-        // console.log("test3")
-
-        // await user.save();
-        // console.log("test4")
-
-        // console.log("Old Password:", oldPassword);
-        // console.log("New Password:", newPassword);
-
-        res.json({message: 'password changed successfully'});
 
     } catch (error) {
-        res.status(500).json({error:error.message});
+        return res.status(500).json({error:error.message});
     }
 
     
