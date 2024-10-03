@@ -13,12 +13,12 @@ console.log('JWT Secret:', process.env.JWT_SECRET); // Add this line for debuggi
 
 //Generate JWT token
 const generateToken = (id)=>{
-    return jwt.sign({id}, process.env.JWT_SECRET, {expiresIn: '1h'})
+    return jwt.sign({id}, process.env.JWT_SECRET)
 };
 
 
 //create user
-router.post('/createUser', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
+router.post('/createUser', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     const{name,username, password,role} = req.body;
     try {
         const user = await User.create({name,username,password,role});
@@ -31,7 +31,7 @@ router.post('/createUser', authMiddleware, authorizeRoles('admin'),async(req,res
 
 
 //getting all users
-router.get('/users', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
+router.get('/users', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     try {
         const users= await User.find({active:true}).select('-password') //exclude password from response
         res.status(200).json(users);
@@ -42,7 +42,7 @@ router.get('/users', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
 
 
 //getting specific user
-router.get('/user/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
+router.get('/user/:id', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     const{id} = req.params;
     try {
        const user = await User.findById(id).select('-password'); //exclude password from response
@@ -56,16 +56,19 @@ router.get('/user/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>
 });
 
 
-//update user
-router.put('/user/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
+//update user's name
+router.put('/user/:id', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     const{id} = req.params;
-    const updates = req.body;
+    const{name} = req.body;
     try {
-        const user = await User.findByIdAndUpdate(id,updates).select('-password')
+        const user = await User.findById(id);
         if(!user || !user.active){
-            return res.status(400).json({message:`can't find user with this id : ${id}`});
+            return res.status(404).json({message:'user not found or inactive'});
         }
-        res.status(200).json(user);
+        user.name = name;
+        await user.save();
+        res.json({ message: 'name changed successfully' });
+
     } catch (error) {
         res.status(400).json({error:error.message});
     }
@@ -73,7 +76,7 @@ router.put('/user/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>
 
 
 //soft delete user (make it inactive)
-router.delete('/user/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
+router.delete('/user/:id', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     const{id} = req.params;
     try {
         const user = await User.findByIdAndUpdate(id,{active:false},{new:true}).select('-password');
@@ -101,10 +104,10 @@ router.post('/login',async(req,res)=>{
         }
         const token = generateToken(user._id);
         if(user.role == 'admin'){
-            return res.json({token, redirect: '/dashboard'});
+            return res.json({token, id:user._id,name:user.name, redirect: '/dashboard'});
         }
         else{
-            return res.json({token , redirect:'/app'});
+            return res.json({token, id:user._id,name:user.name, redirect:'/app'});
         }
     } catch (error) {
         res.status(500).json({error:error.message});
@@ -119,7 +122,7 @@ router.post('/logout', authMiddleware, authorizeRoles('admin','user'),(req,res)=
 
 
 //change password
-router.put('/change-password/:id', authMiddleware, authorizeRoles('admin'),async(req,res)=>{
+router.put('/change-password/:id', authMiddleware, authorizeRoles('admin','user'),async(req,res)=>{
     const {oldPassword, newPassword} = req.body;
     const{id} = req.params;
     console.log("test1")
@@ -134,19 +137,23 @@ router.put('/change-password/:id', authMiddleware, authorizeRoles('admin'),async
         if(!isMatch){
             return res.status(404).json({message:'Old password is incorrect'});
         }
-        console.log(newPassword);
-
-        const hashedPassword = await bcrypt.hash(newPassword,10);
-        console.log("test2")
-
-        user.password = hashedPassword;
-        console.log("test3")
-
+        user.password = newPassword;
         await user.save();
-        console.log("test4")
+        res.json({ message: 'Password changed successfully' });
+        // console.log(newPassword);
 
-        console.log("Old Password:", oldPassword);
-        console.log("New Password:", newPassword);
+        // const hashedPassword = await bcrypt.hash(newPassword,10);
+        // console.log("test2")
+
+        // user.password = hashedPassword;
+        // console.log("test3")
+
+        // await user.save();
+        // console.log("test4")
+
+        // console.log("Old Password:", oldPassword);
+        // console.log("New Password:", newPassword);
+
         res.json({message: 'password changed successfully'});
 
     } catch (error) {

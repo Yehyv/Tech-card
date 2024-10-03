@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+
 const ShopsSchema = mongoose.Schema(
     {
         name:{
